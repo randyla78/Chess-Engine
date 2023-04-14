@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+{% block content %}
+<html lang="en">
+<head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='about.css') }}">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <meta charset="UTF-8">
+    <title>About</title>
+    <style>
+        body{
+            min-height: 100vh;
+            font-family: monospace;
+            background-size: cover;  
+            background-color: #131316;
+            color: antiquewhite;
+        }
+    </style>
+    
+
+</head>
+<body onload="window.scrollTo(0,0);">
+    
+    <div class="mid-align">
+<section class="sec invis" id="sec1">
+    <h1 class="headers">About me.</h1>
+    <p class="line-1 anim-typewriter">My name is Randy La and I am a first year computer science student at York University.</p>
+    <div class="icons">
+        <div class="icon invis">
+            <img src="{{ url_for('static',filename='images/yorku.png') }}" style="height: 80px;">
+        </div>
+        <div class="icon invis">
+            <img src="{{ url_for('static',filename='images/lassonde.png') }}" style="height: 80px;">
+        </div>
+        <p><i class="arrow invis about-arrow" id="down-arrow"></i></p>
+    </div>
+
+</section>
+</div>
+<div class="mid-align">
+<section class="sec invis" id="sec2">
+    <h1>This website.</h1>
+    <div style="position:static;max-width:700px;text-align: center;margin: 0 auto;">
+    <p>This website was created using python for the backend to generate engine moves for chess and tic-tac-toe, and HTML, CSS, Js for the front-end. To relay moves to the chess engine from the front-end and back-end, I used Flask and ajax requests in Js, and to generate the best moves, I implemented my own version of the minimax function.<!--Stagger in the logo of all languages used above and below this text tilted and add like a 2 second delay--></p>
+    </div>
+    <div class="logos">
+        <div class="logo invis">
+            <img src="{{ url_for('static',filename='images/jslogo.png') }}" style="height: 80px;">
+        </div>
+        <div class="logo invis">
+            <img src="{{ url_for('static',filename='images/csslogo.png') }}" style="height: 180px;">
+        </div>
+        <div class="logo invis">
+            <img src="{{ url_for('static',filename='images/htmllogo.png') }}" style="height: 180px;">
+        </div>
+        <div class="logo invis">
+            <img src="{{ url_for('static',filename='images/python-logo.png') }}" style="height: 180px;">
+        </div>
+        <div class="logo invis">
+            <img src="{{ url_for('static',filename='images/flasklogo.png') }}" style="height: 120px;">
+        </div>
+    </div>
+ </section>
+</div>
+<div class="mid-align">
+<section class="sec invis">
+    <h1>More stuff.</h1>
+    <p>For any details and inquiries, please feel free to contact me at randyla78@gmail.com<br>For more projects, click the logo below to visit my GitHub. Thank you</p>
+    
+    <a href="https://github.com/randyla78"><img src="{{ url_for('static',filename='images/githublogo.png') }}" style="height: 120px;"></a>
+</section>
+</div>
+
+<script>
+
+window.onload = function() {
+    setTimeout(function() {
+      window.scroll(0, 0);
+    }, 0);
+  }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            console.log(entry)
+            if (entry.isIntersecting){
+                entry.target.classList.add('show');
+            } 
+            else {
+                entry.target.classList.remove('show');
+            }
+        });
+    });
+    const hiddenElements = document.querySelectorAll('.invis');
+    hiddenElements.forEach((el) => observer.observe(el));
+
+
+</script>
+</body>
+{% endblock %}
+</html>

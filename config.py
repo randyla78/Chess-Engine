@@ -1,0 +1,1 @@
+SECRET_KEY = 'secretkeyka2sdans4xbd'

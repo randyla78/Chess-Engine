@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- add this to get closer to proper style of about page
+    The order of stylesheets and stuff are what messes up the format of the abt page
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+     -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles.css') }}">
+    
+</head>
+<body>
+    {% block content %}
+    {% endblock %}
+</body>
+
+
+
+
+
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tic Tac Toe</title>
+   <style>
+   
+    body{
+        min-width: 90vw;
+        min-height: 90vh;
+        background: radial-gradient(#f1ca91,#e8a948);
+        /*background: radial-gradient(#80FFDB, #5390D9);*/
+        /*background: conic-gradient(#80FFDB, #5390D9);*/
+       /*background: linear-gradient(#80FFDB, #5390D9); */
+
+    }
+    a{
+        color: inherit; /*keeps icon buttons black*/
+        text-decoration: none; /* remove the underline from the link of buttons */  
+    }
+    @import url('https://fonts.cdnfonts.com/css/chalkduster');
+   </style>
+   <link href="https://fonts.cdnfonts.com/css/chalkduster" rel="stylesheet"> 
+   <script src="{{url_for('static', filename='javascript_ttt.js')}}" defer></script>
+   <script src="https://kit.fontawesome.com/4776680ca3.js" crossorigin="anonymous"></script>
+
+</head>
+<body>
+
+<h1 id="tictactoe-title">Tic Tac Toe</h1>
+<!--This gamemode selection box will be hidden when a gamemode is chosen-->
+<div class="box">
+    <div class=box-content>
+        <header>Select to play against bot or friend</header> 
+        
+        <div class="options">
+                <!--  name="botOrFriend"  -->
+                <button name="botOrFriend" value="bot" class="bot-button" id="bot-button-id">Bot</button>
+                <button name="botOrFriend" value="friend" class="friend-button" id="friend-button-id">Friend</button>
+        </div>
+    </div>
+</div>
+
+
+<!--game board and game buttons, appears when gamemode is chosen-->
+<div class="game">
+    <div id="game-update"> <!--switches depending on current state of game-->
+        <div id="x-won" class="hide">X WON !!!!</div>
+        <div id="o-won" class="hide">O WON !!!!</div>
+        <div id="draw" class="hide">DRAW GAME !!!!</div>
+        <div id="player2turn" class="hide">O's Turn</div>
+        <div id="player1turn" class="hide">X's Turn</div>
+    </div>
+    <!--game board-->
+    <div class="grid">
+        <section>
+            <span id="box1"><div id="1"></div></span>
+            <span id="box2"><div id="2"></div></span>
+            <span id="box3"><div id="3"></div></span>
+        </section>
+        <section>
+            <span id="box4"><div id="4"></div></span>
+            <span id="box5"><div id="5"></div></span>
+            <span id="box6"><div id="6"></div></span>
+        </section>
+        <section>
+            <span id="box7"><div id="7"></div></span>
+            <span id="box8"><div id="8"></div></span>
+            <span id="box9"><div id="9"></div></span>
+        </section>
+        <button id="reset">Reset Game</button>
+
+        <audio id="pencil-sound">
+            <source src="{{url_for('static', filename='pencil_sound.wav')}}" type="audio/wav">
+        </audio>
+
+        <audio id="click-sound">
+            <source src="{{url_for('static', filename='click_sound.wav')}}" type="audio/wav">
+        </audio>
+    </div>
+</div>
+
+<a href="/">
+    <div class="circle home-icon">
+        <i class="fa-solid fa-house fa-2x"></i>
+    </div>
+</a>
+
+<!--customize and info button, appears when gamemode is chosen-->
+<div class="icon-container">
+    <div class="circle customize-icon">
+        <i class="fa-solid fa-pencil fa-2x"></i>
+    </div>
+
+    <a href="/about">
+    <div class="circle info-icon">
+        <i class="fa-solid fa-info fa-2x"></i>
+    </div>
+    </a>
+</div>
+
+{% endblock %}
+</body>
+</html>

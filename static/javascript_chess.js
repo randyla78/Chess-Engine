@@ -37,7 +37,10 @@ let difficulty = null;
         console.log(difficulty);
         const settings = { color_select, difficulty, with_engine };
         send_settings(settings);
-        
+        if(color_select=="black"){
+          
+          play_initial_move();
+        }
         select_box.classList.add('hide');
         setTimeout(function() {
           board.classList.add('show');
@@ -45,6 +48,24 @@ let difficulty = null;
       white_turn.classList.add('show');
       icon_container.classList.add("show");
     });
+
+    function play_initial_move() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/play_initial_move", true);
+      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+          var response = JSON.parse(xhr.responseText);
+          comp_move = response.comp_move;
+          comp_from_square = comp_move.substring(0,2);
+          comp_to_square = comp_move.slice(-2);
+          comp_piece = getPieceOnSquare(comp_from_square);
+          move_piece(comp_piece, comp_to_square);
+        }
+      };
+      xhr.send(JSON.stringify({}));
+    };
+    
 
     const no_engine_btn = document.getElementById('no-engine-btn');
     no_engine_btn.addEventListener('click', (event) => {
@@ -89,6 +110,10 @@ let difficulty = null;
   }
 
   function move_piece(piece, position) { //change to taking for eg b4 as a parameter instead, then converting that into (2, 4)
+    console.log("1st param: ");
+    console.log(piece);
+    console.log("2nd param: ");
+    console.log(position);
     const [col, row] = position.split('');
     // Convert the column to a number (e.g. 'a' => 1, 'b' => 2, etc.)
     const colNum = col.charCodeAt(0) - 96;
@@ -200,6 +225,7 @@ current_piece_square = null;
   const white_turn = document.querySelector(".white-turn");
   const black_turn = document.querySelector(".black-turn");
 
+
   function make_move(move_dict) {
     if(parseInt(difficulty)>3){
       black_turn.classList.add('show');
@@ -262,7 +288,7 @@ current_piece_square = null;
             remove_piece.style.bottom = "calc((100% / 8)*0)";
             remove_piece.style.zIndex = `-5`;
           }
-          move_piece(comp_piece, comp_to_square)
+          move_piece(comp_piece, comp_to_square);
       }
         
       }

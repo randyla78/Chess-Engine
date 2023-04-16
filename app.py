@@ -59,6 +59,7 @@ def chess_settings():
     game.board.reset
     return "works"
 
+engine_color = "BLACK"
 #receives from ajax the move the user tries to play
 @app.route("/make_move", methods=["POST"])
 def make_move():
@@ -101,7 +102,10 @@ def make_move():
                 return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': game_outcome})
             #here, check if engine is playing
             if with_engine:
-                best_move = playEngineMove(int(depth), ch.BLACK)        
+                if user_color == "black":
+                    best_move = playEngineMove(int(depth), ch.WHITE)        
+                else:
+                    best_move = playEngineMove(int(depth), ch.BLACK)
                 game.board.push(best_move)
                 best_move_str = best_move.uci()
                 #push engine move
@@ -122,7 +126,10 @@ def make_move():
         if with_engine:
                 #push engine move
                 print('playing best move...')
-                best_move = playEngineMove(int(depth), ch.BLACK)
+                if user_color == "black":
+                    best_move = playEngineMove(int(depth), ch.WHITE)
+                else:
+                    best_move = playEngineMove(int(depth), ch.BLACK)
                 print('best move:')
                 game.board.push(best_move)
                 best_move_str = best_move.uci()
@@ -132,6 +139,19 @@ def make_move():
         print("move was not played")
         return "move was not played"
 
+@app.route("/play_initial_move", methods=["POST"])
+def play_initial_move():
+  global depth
+  best_move = playEngineMove(3, ch.WHITE)
+  print("PLAYING FIRST MOVE")
+  print(best_move)
+  print(type(best_move))
+  game.board.push(best_move)
+  print(game.board)
+  best_move_str = best_move.uci()
+  return jsonify({'comp_move': best_move_str})    
+  
+  
 
 def get_outcome():
     outcome = game.board.outcome()

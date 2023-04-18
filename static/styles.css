@@ -508,6 +508,30 @@ top: -30px;
     cursor: pointer;
 }
 
+.info{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin: 22px;
+  color: white;
+}
+.circle-home{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: solid white 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease
+}
+.circle-home:hover{
+  color: #4a70bd;
+  border: solid #4a70bd 4px;
+  box-shadow: 0 0 15px #4a70bd;
+  text-shadow: 0 0 3px #4a70bd;
+}
 
 
 /*tic tac toe page styling*/

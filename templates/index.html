@@ -6,8 +6,11 @@
     <meta charset="UTF-8">
     <title>Home Page</title>
     <style>
-    body { background-color: rgb(23,32,49); }
+    body { background-color: rgb(23,32,49); 
+    overflow-x: hidden;}
+    a{ color: inherit; /*keeps icon buttons black*/ }
     </style>
+    <script src="https://kit.fontawesome.com/4776680ca3.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -31,6 +34,12 @@
         </a>
         </div>
 </div>
+<a href="/about">
+    <div class="circle-home info-icon info">
+        <i class="fa-solid fa-info fa-2x"></i>
+    </div>
+    </a>
+    
     {% endblock %}
 </body>
 

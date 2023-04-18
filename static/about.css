@@ -163,3 +163,31 @@
     right: 42%;
     bottom:35%;
 }
+
+.back{
+    position: fixed;
+    left: 0;
+    top: 0;
+    margin: 4px;
+    color: white;
+  }
+  .circle-back{
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border:  4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.45s ease;
+    text-decoration: none;
+  }
+  .circle-back:hover{
+    text-decoration: none;
+    color: #4a70bd;
+    border: solid #4a70bd 4px;
+    box-shadow: 0 0 15px #4a70bd;
+    text-shadow: 0 0 3px #4a70bd;
+  }
+  

@@ -136,14 +136,7 @@ var temp = null;
             pawn.src = "/static/images/white_queen.png";
           }
         }
-        //if game is no longer running
-        if (!response.chess_game_running) {
-          //display the game outcome
-          document.getElementById("game-outcome").innerHTML = response.outcome + "!";
-          black_turn.classList.remove('show');
-          white_turn.classList.remove('show');
-          return
-        }
+
         capture_piece = response.capturing_piece;
         var current_piece = document.getElementById(response.selected_piece);
         move_piece(current_piece, response.to_square);
@@ -188,6 +181,15 @@ var temp = null;
           }
           move_piece(comp_piece, comp_to_square);
       }
+
+              //if game is no longer running
+              if (!response.chess_game_running) {
+                //display the game outcome
+                document.getElementById("game-outcome").innerHTML = response.outcome + "!";
+                black_turn.classList.remove('show');
+                white_turn.classList.remove('show');
+                return
+              }
       }
     };
     xhr.send(JSON.stringify(move_dict));

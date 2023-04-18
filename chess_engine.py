@@ -12,37 +12,50 @@ class Engine:
         return self.engine(None, 1)
 
     def get_evaluation(self):
-        bot = 0
-        #Sums up the material values
-        bot+=self.get_piece_values()
-        bot+=self.check_checkmate() + self.opening() + 0.001*random.random()
-        return bot
+        eval = 0
+        #get evaluation by returning total piece values
+        eval+=self.get_piece_values()
+        eval+=self.check_checkmate() + self.opening() + 0.001*random.random()
+        return eval
 
-    def check_checkmate(self):
-        if (self.board.legal_moves.count()==0):
-            if (self.board.turn == self.bot_color):
-                return -999
-            else:
-                return 999
+    def engine(self, node_value, depth):
+        #end recursion if max depth reached or if no more legal moves
+        if ( depth == self.max_depth or self.board.legal_moves.count() == 0):
+            return self.get_evaluation()
         else:
-            return 0
-
-    #to make the engine developp in the first moves
-    def opening(self):
-        if (self.board.fullmove_number<10):
-            if (self.board.turn == self.bot_color):
-                return 1/30 * self.board.legal_moves.count()
+            move_list = list(self.board.legal_moves)
+            new_node_value = None
+            #uneven depth implies engine's turn
+            if(depth % 2 != 0):
+                new_node_value = float("-inf")
             else:
-                return -1/30 * self.board.legal_moves.count()
-        else:
-            return 0
+                new_node_value = float("inf")
+            for i in move_list:
+                #temporarily play move to get the value of that move
+                self.board.push(i)
+                value = self.engine(new_node_value, depth + 1) 
+                if(value > new_node_value and depth % 2 != 0):
+                    if (depth == 1):
+                        move=i
+                    new_node_value = value
+                #minimizing during player's turn
+                elif(value < new_node_value and depth % 2 == 0):
+                    new_node_value = value
+                #alpha-beta prunning 
+                if (node_value != None and value < node_value and depth % 2 == 0):
+                    self.board.pop()
+                    break
+                elif (node_value != None and value > node_value and depth % 2 != 0):
+                    self.board.pop()
+                    break
+                self.board.pop()
+            if (depth>1):
+                return new_node_value
+            else:
+                return move
 
-    #Takes a square as input and 
-    #returns the corresponding Hans Berliner's
-    #system value of it's resident
     def get_piece_values(self):
         total = 0
-        
         for i in range(64):
             piece_value = 0
             if(self.board.piece_type_at(i) == chess.PAWN):
@@ -55,69 +68,26 @@ class Engine:
                 piece_value += 3.2
             elif (self.board.piece_type_at(i) == chess.QUEEN):
                 piece_value += 8.8
-
             if (self.board.color_at(i)!=self.bot_color):
                 total -=piece_value
             else:
                 total +=piece_value
         return total
 
-        
-    def engine(self, node_value, depth):
-        
-        #reached max depth of search or no possible moves
-        if ( depth == self.max_depth or self.board.legal_moves.count() == 0):
-            return self.get_evaluation()
-        
+    def check_checkmate(self):
+        if (self.board.legal_moves.count()==0):
+            if (self.board.turn == self.bot_color):
+                return -999
+            else:
+                return 999
         else:
-            #get list of legal moves of the current position
-            move_list = list(self.board.legal_moves)
-            
-            #initialise newCandidate
-            new_node_value = None
-            #(uneven depth means engine's turn)
-            if(depth % 2 != 0):
-                new_node_value = float("-inf")
+            return 0
+        
+    def opening(self):
+        if (self.board.fullmove_number<10):
+            if (self.board.turn == self.bot_color):
+                return 1/30 * self.board.legal_moves.count()
             else:
-                new_node_value = float("inf")
-            
-            #analyse board after deeper moves
-            for i in move_list:
-
-                #Play move i
-                self.board.push(i)
-
-                #Get value of move i (by exploring the repercussions)
-                value = self.engine(new_node_value, depth + 1) 
-
-                #Basic minmax algorithm:
-                #if maximizing (engine's turn)
-                if(value > new_node_value and depth % 2 != 0):
-                    #need to save move played by the engine
-                    if (depth == 1):
-                        move=i
-                    new_node_value = value
-                #if minimizing (human player's turn)
-                elif(value < new_node_value and depth % 2 == 0):
-                    new_node_value = value
-
-                #Alpha-beta prunning cuts: 
-                #(if previous move was made by the engine)
-                if (node_value != None and value < node_value and depth % 2 == 0):
-                    self.board.pop()
-                    break
-                #(if previous move was made by the human player)
-                elif (node_value != None and value > node_value and depth % 2 != 0):
-                    self.board.pop()
-                    break
-                
-                #Undo last move
-                self.board.pop()
-
-            #Return result
-            if (depth>1):
-                #return value of a move in the tree
-                return new_node_value
-            else:
-                #return the move (only on first move)
-                return move
+                return -1/30 * self.board.legal_moves.count()
+        else:
+            return 0

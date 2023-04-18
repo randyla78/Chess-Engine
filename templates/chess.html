@@ -18,96 +18,57 @@
 
 <script src="https://kit.fontawesome.com/4776680ca3.js" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
 <script src="{{url_for('static', filename='javascript_chess.js')}}" defer></script>
 </head>
+
 <body>
-
 <div id="game-outcome"></div>
-
-<!--
-<input type="radio" name="payment" id="card">
-<label for="card">
-    <i class="fa fa-credit-card" aria-hidden="true"></i>
-    <span>Card</span>
-</label>
-<input type="radio" name="payment" id="cash">
-<label for="cash">
-    <i class="fa fa-money" aria-hidden="true"></i>
-    <span>Cash</span>
-</label>     
--->  
-
-
 
 <form id="chess-settings-form">
 <div class="select-box">
     <div class=select-box-content>
-        
-        <!--<header>Select Settings</header>-->
         <h3>Choose your color</h3>
-        
         <div class="options">
-             
-            
-                <!--  name="botOrFriend"  -->
-                <input type="radio" name="color-select" id="white" value="white">
-                <label for="white" class="piece-label-white">
-                    <div class="white-select">
-                    <i class="fa-solid fa-chess piece-icons" aria-hidden="true"></i>
-                </div>
-                <span>White</span>
+            <input type="radio" name="color-select" id="white" value="white">
+            <label for="white" class="piece-label-white">
+              <div class="white-select">
+                  <i class="fa-solid fa-chess piece-icons" aria-hidden="true"></i>
+              </div>
+              <span>White</span>
             </label>
-                
-                
-                <input type="radio" name="color-select" id="black" value="black">
-                <label for="black" class="piece-label-black">
-                    <div class="black-select">
-                    <i class="fa-solid fa-chess piece-icons" aria-hidden="true"></i>
-                </div>
-                    <span>Black</span>
-                </label>
-
+            <input type="radio" name="color-select" id="black" value="black">
+            <label for="black" class="piece-label-black">
+              <div class="black-select">
+                  <i class="fa-solid fa-chess piece-icons" aria-hidden="true"></i>
+              </div>
+              <span>Black</span>
+            </label>
         </div>
-        
-         
-
         <h3>Choose engine difficulty</h3>
-
         <div class="slider">
             <label for="fader">Difficulty </label>
-            <input type="range" min="2" max="4" value="3" id="fader" 
-            step="1" list="volsettings">
+            <input type="range" min="2" max="4" value="3" id="fader" step="1" list="volsettings">
             <datalist id="volsettings">
-            <option>2</option>
-            
-            <option>3</option>
-            <option>4</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
             </datalist>
-            
-            </div>
-        
-            <div class="difficulty-container">
+        </div>
+        <div class="difficulty-container">
             <p>Easy</p>
             <p>Medium</p>
             <p>Hard</p>
-            </div>
-            
-
-            <button type="submit" id="submit-btn">
-                START GAME
-                <i class="fa-solid fa-chess-king king"></i>
-                <span class="block1"></span>
-                <span class="block2"></span>
-                
-              </button>
-
-              <p id="no-engine-btn">Play w/o Engine</p>
+        </div>
+       <button type="submit" id="submit-btn">
+          START GAME
+          <i class="fa-solid fa-chess-king king"></i>
+          <span class="block1"></span>
+          <span class="block2"></span>
+        </button>
+      <p id="no-engine-btn">Play w/o Engine</p>
     </div>
 </div>
 </form>
-
-
 
 <div class="board">
     <div class="row">
@@ -237,9 +198,6 @@
         <i class="fa-solid fa-pencil fa-2x"></i>
     </div>     
     </div>
-    
-
-       
       
         <a href="/">
           <div class="circle home-icon">
@@ -256,8 +214,6 @@
           </div>
           </a>
       </div>
-      
-
 {% endblock %}
 </body>
 </html>

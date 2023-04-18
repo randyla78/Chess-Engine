@@ -2,35 +2,24 @@
 {% extends 'base.html' %}
 {% block content %}
 <html lang="en">
-    
 <head>
     <meta charset="UTF-8">
     <title>Home Page</title>
     <style>
-    body {
-        background-color: rgb(23,32,49);
-        /*
-        padding: 0;
-        margin: 0;
-        background-image: radial-gradient(rgb(23,32,49) 60px, transparent 6px);
-        background-color: #ffd400;
-        background-size: 90px 90px;*/
-    }
-    
+    body { background-color: rgb(23,32,49); }
     </style>
 </head>
+
 <body>
     <div id="select-text">
     <h1>Select your game</h1>
 </div>
-
-    
     <div class="game-select">
         <div class="box1">
         <a href="/tictactoe">
             <img src="{{ url_for('static',filename='images/tic_tac_toe.png') }}" class="game-images" id="tic-tac-toe">
             <img src="{{ url_for('static',filename='images/play.png') }}" class="game-images" id="play-button">
-            <div class="game-images" id="poop"></div>
+            <div class="game-images" id="game-image"></div>
         </a>
         </div>
 
@@ -38,26 +27,11 @@
         <a href="/chess">
             <img src="{{ url_for('static',filename='images/chess.png') }}" class="game-images" id="tic-tac-toe">
             <img src="{{ url_for('static',filename='images/play.png') }}" class="game-images" id="play-button">
-            <div class="game-images" id="poop"></div>
+            <div class="game-images" id="game-image"></div>
         </a>
-        <!--Write under chess:
-        After one move each, there are 400 possible positions.
-         After two moves, there are 72,084 possible positions.
-        After three, there are 9 million, then 318 billion. After 40 moves,
-        there are more distinct possible games (10^120) than the number of
-        electrons in the observable universe (10^81)-->
         </div>
 </div>
-
-
-
-
-
     {% endblock %}
 </body>
-
-
-
-
 
 </html>

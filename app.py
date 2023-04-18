@@ -3,12 +3,10 @@ import chess_engine as ce #python file
 import chess as ch
 import config
 
-
 app = Flask(__name__)
 app.config.from_object(config)
 app.secret_key = app.config['SECRET_KEY']
 
-#flask app starts
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -18,7 +16,6 @@ def about():
     return render_template('about.html')
 
 #CHESS GAME FUNCTIONS (tic tac toe game is below)
-#Chess functions (tictactoe below)
 @app.route("/chess")
 def chess():
     return render_template('/chess.html')
@@ -34,32 +31,32 @@ def playEngineMove(maxDepth, color):
     best_move = engine.get_best_move()
     return best_move
 
-
 @app.route("/chess_settings", methods=['POST'])
 def chess_settings():
     global chess_game_running
+    global user_color
+    global depth
+    global with_engine
+    global kings_moved
+    global game
+    global promoted_pawns
     chess_game_running = True
+    kings_moved.clear()
+    promoted_pawns.clear()
     #get game settings from ajax
     settings = request.get_json()
-    #settings["color_select"] gives prints white or black
-    #settings["difficulty"] gives max depth as an int
-    #settings["with_engine"] gives boolean value
-    global user_color
     user_color = settings["color_select"]
-    global depth
     depth = settings["difficulty"]
-    global with_engine
     with_engine = settings["with_engine"]
     #create a new board object
     newBoard = ch.Board()
-    global game
     game = Main(newBoard)
-    print(game.board)
-    
     game.board.reset
-    return "works"
+    return "game start"
 
-engine_color = "BLACK"
+promoted_pawns = []
+previous_move = {"previous_piece":"N/a", "from_square":"a1", "to_square":"a1"}
+
 #receives from ajax the move the user tries to play
 @app.route("/make_move", methods=["POST"])
 def make_move():
@@ -68,6 +65,8 @@ def make_move():
     global depth
     global with_engine
     global chess_game_running
+    global previous_move
+    castle_check=0
     #gets the move the user tried to play
     move_dict = request.get_json()
     if chess_game_running == False:
@@ -80,27 +79,35 @@ def make_move():
         #convert move to proper chess library format
         current_square = ch.SQUARE_NAMES.index(current_square)
         to_square = ch.SQUARE_NAMES.index(to_square)
-        #play move
-        move = ch.Move.from_uci(ch.SQUARE_NAMES[current_square] + ch.SQUARE_NAMES[to_square])
+        #check if a pawn is promoting, then make the move
+        if check_promote(selected_piece, move_dict["current_square"], move_dict["to_square"])==True and selected_piece not in promoted_pawns:
+            #keep track of all pawns that promoted
+            promoted_pawns.append(selected_piece)
+            move = ch.Move.from_uci(ch.SQUARE_NAMES[current_square] + ch.SQUARE_NAMES[to_square] + "q")
+            promoting = True
+        else: 
+            move = ch.Move.from_uci(ch.SQUARE_NAMES[current_square] + ch.SQUARE_NAMES[to_square])
+            promoting = False
+        #check if a pawn is doing en passant (by checking if the previous enemy move was a two square pawn advancement)
+        is_en_passant = check_enpassant(previous_move, selected_piece, move_dict["current_square"], move_dict["to_square"])
+        if game.board.is_legal(move):
+            en_passant_capture = previous_move['previous_piece']
+            previous_move = {"previous_piece":selected_piece, "from_square":move_dict["current_square"], "to_square":move_dict["to_square"]}
         if not game.board.is_legal(move):
-            print("move was not played")
             return "move was not played"  
         elif game.board.piece_at(to_square) is not None and game.board.piece_at(to_square).color == game.board.turn:
-            print("You cannot capture your own pieces")
-            return "Error: You cannot capture your own pieces"
-        elif game.board.piece_at(to_square) is not None and game.board.piece_at(to_square).color != game.board.turn:
+            return "cannot capture own piece"
+        elif (game.board.piece_at(to_square) is not None and game.board.piece_at(to_square).color != game.board.turn) or is_en_passant:
             #this checks if there is an enemy piece on the to_square and if we can capture it. 
             game.board.push(move)
-            print(game.board)
-            print('piece captured')
             #get current state of game (if there is a checkmate or draw)
             outcome = game.board.outcome()
             if outcome is not None:
                 #checkmate or draw occured, turn off game return the outcome
                 chess_game_running = False
                 game_outcome = get_outcome()
-                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': game_outcome})
-            #here, check if engine is playing
+                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': game_outcome, 'castle': castle_check, "en_passant": False})
+            #check if engine is playing
             if with_engine:
                 if user_color == "black":
                     best_move = playEngineMove(int(depth), ch.WHITE)        
@@ -109,49 +116,96 @@ def make_move():
                 game.board.push(best_move)
                 best_move_str = best_move.uci()
                 #push engine move
-                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'comp_move': best_move_str})    
+                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'comp_move': best_move_str, 'castle': castle_check, 'promoting':promoting})    
+            if is_en_passant:
+                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'castle': castle_check, 'en_passant': True, "capturing":en_passant_capture})
             #return the move that was played to javascript
-            return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': "game_running"})
+            return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'castle': castle_check, 'promoting':promoting, "en_passant": False})
         game.board.push(move)
         #check if game has ended
         outcome = game.board.outcome()
         if outcome is not None:
-            print("GAME IS OVER")
             chess_game_running = False
             game_outcome = get_outcome()
-            print(game_outcome)
-            return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': chess_game_running, 'chess_game_running': False, 'outcome': game_outcome})
-        print(game.board)
+            return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': chess_game_running, 'chess_game_running': False, 'outcome': game_outcome, 'castle': castle_check, 'promoting':promoting})
         #return the move that was played
         if with_engine:
-                #push engine move
-                print('playing best move...')
                 if user_color == "black":
                     best_move = playEngineMove(int(depth), ch.WHITE)
                 else:
                     best_move = playEngineMove(int(depth), ch.BLACK)
-                print('best move:')
                 game.board.push(best_move)
                 best_move_str = best_move.uci()
-                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'comp_move': best_move_str})    
-        return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running"})
+                if selected_piece in ['w-king', 'b-king']:
+                    castle_check = check_castle(selected_piece, move_dict["to_square"])
+                outcome = game.board.outcome()
+                if outcome is not None:
+                    #checkmate or draw occured
+                    chess_game_running = False
+                    game_outcome = get_outcome()
+                    return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': True, 'chess_game_running': chess_game_running, 'outcome': game_outcome, 'comp_move': best_move_str, 'castle': castle_check, "en_passant": False})
+                if is_en_passant:
+                    return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'comp_move': best_move_str, 'castle': castle_check, 'promoting':promoting, 'en_passant': True, "capturing":en_passant_capture})    
+                return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'comp_move': best_move_str, 'castle': castle_check, 'promoting':promoting})    
+        #if king move is played, check if king is trying to castle
+        if selected_piece in ['w-king', 'b-king']:
+            castle_check = check_castle(selected_piece, move_dict["to_square"])
+        return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'castle': castle_check, 'promoting':promoting})
     except:
-        print("move was not played")
         return "move was not played"
+
 
 @app.route("/play_initial_move", methods=["POST"])
 def play_initial_move():
   global depth
   best_move = playEngineMove(3, ch.WHITE)
-  print("PLAYING FIRST MOVE")
-  print(best_move)
-  print(type(best_move))
   game.board.push(best_move)
-  print(game.board)
   best_move_str = best_move.uci()
   return jsonify({'comp_move': best_move_str})    
-  
-  
+        
+def check_enpassant(previous_move_dict, piece, current_square, to_square):
+        #get how far the previous pawn moved vertically (to check if it advanced two squares)
+        diff = abs(int(previous_move['to_square'][1])-int(previous_move['from_square'][1]))
+        #get how far the current pawn moved horizontally (check if it is capturing)
+        diff1 = abs(ord(to_square[0])-ord(current_square[0]))
+        #if previous pawn moved 2 vertically, 
+        #and current pawn moved 1 horizontally, and if both pieces are pawns
+        #then an en passant is occuring
+        if diff==2 and diff1==1 and previous_move_dict['previous_piece'][2] == 'p' and piece[2]=='p':
+            return True
+        return False
+
+def check_promote(piece, current_square, to_square):
+    #if white pawn reaches 8th rank or if black pawn reaches first rank, then pawn promotes
+    ch_current_square = ch.SQUARE_NAMES.index(current_square)
+    ch_to_square = ch.SQUARE_NAMES.index(to_square)
+    check_move = ch.Move.from_uci(ch.SQUARE_NAMES[ch_current_square] + ch.SQUARE_NAMES[ch_to_square] + "q")
+    if piece[:3] == "w-p" and to_square[1] == "8" and game.board.is_legal(check_move):
+        return True
+    elif piece[:3] == "b-p" and to_square[1] == "1" and game.board.is_legal(check_move):
+        return True
+    else:
+        return False
+    
+kings_moved=[]
+def check_castle(king, to_square):
+    global kings_moved
+    if king in kings_moved:
+        return 0
+    if king=='w-king':
+        kings_moved.append(king)
+    elif king=='b-king':
+        kings_moved.append(king)
+    if to_square=='g1':   
+        return 1 #white short castle
+    elif to_square=='c1':
+        return 2 #white long castle
+    elif to_square=='g8':
+        return 3 #black short castle
+    elif to_square=='c8':
+        return 4 #black long castle
+    return 0
+    
 
 def get_outcome():
     outcome = game.board.outcome()
@@ -167,13 +221,11 @@ def get_outcome():
         print("Game is still in progress")
 
 
-#def get_legal_moves(square)
+#takes a square as a parameter from ajax and returns all legal moves for the piece on that square
 @app.route("/get_legal_moves_for_piece", methods=["POST"])
 def get_legal_moves_for_piece():
-    #get square from ajax
     data = request.get_json()
     square = data["selected_square"]
-    
     legal_squares = legal_moves_for_piece(game.board, square)
     return legal_squares
 
@@ -183,15 +235,12 @@ def legal_moves_for_piece(board, square_name):
     if piece is None:
         return []
     legal_moves = []
-
     for move in board.legal_moves:
         if move.from_square == square:
             if board.is_capture(move) or board.is_en_passant(move) or board.is_pseudo_legal(move):
                 if board.is_legal(move):
                     legal_moves.append(move.to_square)
-
     return [ch.square_name(square) for square in legal_moves]
-
 
 
 
@@ -221,8 +270,8 @@ def botOrPlayer():
         return jsonify(updated_data)
 
 #receives ajax request with the current board and which box the user clicked.
-#depending on gamemode and whose turn, this calls appropiate functions to make
-#a move then sends the new board via jsonify to javascript file
+#depending on gamemode and whose turn, call the proper functions to make
+#a move then send the new board via jsonify to javascript file
 @app.route("/movePlay", methods=["POST"])
 def movePlay():
     global player2turn
@@ -236,11 +285,9 @@ def movePlay():
             gameUpdate['draw'] = False
             gameRunning = True
             player2turn = False
-            
             if withComputer:
                 grid[1] = 'X'
                 player2turn = True
-                
                 return jsonify(grid, gameUpdate, player2turn)
             return jsonify(grid, gameUpdate, player2turn)
         if gameRunning == False:
@@ -334,15 +381,15 @@ def player2Move():
     return
 
 def compMove():
-    bestScore = -800
+    best_score = -800
     bestMove = 0
     for key in grid.keys():
         if grid[key] == ' ':
             grid[key] = computer
             score = minimax(grid, False) #call minimax function to find best move
             grid[key] = ' ' #check move, then revert back to original state
-            if score > bestScore:
-                bestScore = score
+            if score > best_score:
+                best_score = score
                 bestMove = key
     playMove(computer, bestMove)
     return
@@ -356,42 +403,42 @@ def minimax(grid, maximize):
     elif checkDraw():
         return 0
     if maximize == True:
-        bestScore = -800
+        best_score = -800
         for key in grid.keys():
             if grid[key] == ' ':
                 grid[key] = computer
                 score = minimax(grid, False)
                 grid[key] = ' '
-                if score > bestScore:
-                    bestScore = score
-        return bestScore
+                if score > best_score:
+                    best_score = score
+        return best_score
     else: #minimizing
-        bestScore = 800
+        best_score = 800
         for key in grid.keys():
             if grid[key] == ' ':
                 grid[key] = player2
                 score = minimax(grid, True)
                 grid[key] = ' '
-                if score < bestScore:
-                    bestScore = score
-        return bestScore
+                if score < best_score:
+                    best_score = score
+        return best_score
 
-def checkWinner(currentMove):
-    if (grid[1] == currentMove and grid[1] == grid[2] and grid[1] == grid[3]):
+def checkWinner(current_move):
+    if (grid[1] == current_move and grid[1] == grid[2] and grid[1] == grid[3]):
         return True
-    elif (grid[4] == currentMove and grid[4] == grid[5] and grid[4] == grid[6]):
+    elif (grid[4] == current_move and grid[4] == grid[5] and grid[4] == grid[6]):
         return True
-    elif (grid[7] == currentMove and grid[7] == grid[8] and grid[7] == grid[9]):
+    elif (grid[7] == current_move and grid[7] == grid[8] and grid[7] == grid[9]):
         return True
-    elif (grid[1] == currentMove and grid[1] == grid[4] and grid[1] == grid[7]):
+    elif (grid[1] == current_move and grid[1] == grid[4] and grid[1] == grid[7]):
         return True
-    elif (grid[2] == currentMove and grid[2] == grid[5] and grid[2] == grid[8]):
+    elif (grid[2] == current_move and grid[2] == grid[5] and grid[2] == grid[8]):
         return True
-    elif (grid[3] == currentMove and grid[3] == grid[6] and grid[3] == grid[9]):
+    elif (grid[3] == current_move and grid[3] == grid[6] and grid[3] == grid[9]):
         return True
-    elif (grid[1] == currentMove and grid[1] == grid[5] and grid[1] == grid[9]):
+    elif (grid[1] == current_move and grid[1] == grid[5] and grid[1] == grid[9]):
         return True
-    elif (grid[7] == currentMove and grid[7] == grid[5] and grid[7] == grid[3]):
+    elif (grid[7] == current_move and grid[7] == grid[5] and grid[7] == grid[3]):
         return True
     else:
         return False

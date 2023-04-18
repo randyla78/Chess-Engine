@@ -114,6 +114,10 @@ var temp = null;
       if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
         // get all data from flask stored in response variable
         var response = JSON.parse(xhr.responseText);
+        if (response.selected_piece==="move was not played"){
+          return
+        }
+        
         //first check if either side is castling
         if (response.castle==1){
           move_piece(document.getElementById("w-rook2"), "f1")
@@ -265,10 +269,10 @@ function get_legal_moves(square) {
     var square_element = document.getElementById(square);
     square_element.style.backgroundColor = "red";
     //get all legal squares that a specific piece can move to from flask
-    var legal_moves = JSON.parse(xhr.responseText);
+    var response = JSON.parse(xhr.responseText);
         //loop through each square and highlight it
-        for (var i = 0; i < legal_moves.length; i++) {
-          var square_id = legal_moves[i];
+        for (var i = 0; i < response.legal_moves.length; i++) {
+          var square_id = response.legal_moves[i];
           var square_elem = document.getElementById(square_id);
           square_elem.style.backgroundColor = "orange"; 
         }

@@ -70,7 +70,7 @@ def make_move():
     #gets the move the user tried to play
     move_dict = request.get_json()
     if chess_game_running == False:
-        return "game over"
+        return jsonify({'selected_piece': "move was not played"})    
     #try to play move
     try:
         selected_piece = move_dict['selected_piece']
@@ -94,9 +94,10 @@ def make_move():
             en_passant_capture = previous_move['previous_piece']
             previous_move = {"previous_piece":selected_piece, "from_square":move_dict["current_square"], "to_square":move_dict["to_square"]}
         if not game.board.is_legal(move):
-            return "move was not played"  
+            return jsonify({'selected_piece': "move was not played"})    
         elif game.board.piece_at(to_square) is not None and game.board.piece_at(to_square).color == game.board.turn:
-            return "cannot capture own piece"
+            #can't capture own piece
+            return jsonify({'selected_piece': "move was not played"}) 
         elif (game.board.piece_at(to_square) is not None and game.board.piece_at(to_square).color != game.board.turn) or is_en_passant:
             #this checks if there is an enemy piece on the to_square and if we can capture it. 
             game.board.push(move)
@@ -152,7 +153,7 @@ def make_move():
             castle_check = check_castle(selected_piece, move_dict["to_square"])
         return jsonify({'selected_piece': selected_piece, 'to_square':move_dict["to_square"], 'capturing_piece': False, 'chess_game_running': chess_game_running, 'outcome': "game_running", 'castle': castle_check, 'promoting':promoting})
     except:
-        return "move was not played"
+        return jsonify({'selected_piece': "move was not played"})    
 
 
 @app.route("/play_initial_move", methods=["POST"])
@@ -227,7 +228,8 @@ def get_legal_moves_for_piece():
     data = request.get_json()
     square = data["selected_square"]
     legal_squares = legal_moves_for_piece(game.board, square)
-    return legal_squares
+    return jsonify({'legal_moves': legal_squares})
+    
 
 def legal_moves_for_piece(board, square_name):
     square = ch.parse_square(square_name)

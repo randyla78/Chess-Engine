@@ -117,6 +117,13 @@ var temp = null;
         if (response.selected_piece==="move was not played"){
           return
         }
+        //if game is no longer running
+        if (!response.chess_game_running) {
+          //display the game outcome
+          document.getElementById("game-outcome").innerHTML = response.outcome + "!";
+          black_turn.classList.remove('show');
+          white_turn.classList.remove('show'); 
+        }
         
         //first check if either side is castling
         if (response.castle==1){
@@ -184,16 +191,17 @@ var temp = null;
             remove_piece.style.zIndex = `-5`;
           }
           move_piece(comp_piece, comp_to_square);
+        
+          }
+          if (!response.chess_game_running) {
+            //display the game outcome
+            document.getElementById("game-outcome").innerHTML = response.outcome + "!";
+            black_turn.classList.remove('show');
+            white_turn.classList.remove('show');
+            return
       }
 
-              //if game is no longer running
-              if (!response.chess_game_running) {
-                //display the game outcome
-                document.getElementById("game-outcome").innerHTML = response.outcome + "!";
-                black_turn.classList.remove('show');
-                white_turn.classList.remove('show');
-                return
-              }
+              
       }
     };
     xhr.send(JSON.stringify(move_dict));

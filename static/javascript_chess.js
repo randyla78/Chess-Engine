@@ -124,7 +124,7 @@ var temp = null;
           black_turn.classList.remove('show');
           white_turn.classList.remove('show'); 
         }
-        
+
         //first check if either side is castling
         if (response.castle==1){
           move_piece(document.getElementById("w-rook2"), "f1")
@@ -239,9 +239,6 @@ var temp = null;
 
   pieces.forEach(piece => {
     piece.addEventListener('click', () => {
-      const poop = getPieceOnSquare("e8");
-      console.log("piece on e8 is");
-      console.log(poop);
       //get the current square of the clicked piece (using the fact that each piece and square is 1/8 of the board)
       const squareWidth = piece.offsetWidth;
       const squareHeight = piece.offsetHeight;
